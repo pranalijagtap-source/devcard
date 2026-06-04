@@ -90,7 +90,10 @@ async function generateCard() {
   const bio    = document.getElementById('inp-bio').value.trim();
 
   // Validation — don't proceed without a name
-  if (!name) {
+  // UPGRADE 1: if github is entered but name is empty,
+  // we'll try to fill the name from GitHub first — so skip
+  // the name check here and handle it after the API call
+  if (!name && !github) {
     setStatus('Please enter your name.');
     return;
   }
@@ -110,9 +113,23 @@ async function generateCard() {
       // await means: wait here until we get a response
       const response = await fetch(`https://api.github.com/users/${github}`);
 
+      // UPGRADE 4: handle rate limiting (403 = too many requests)
+      if (response.status === 403) {
+        setStatus('GitHub rate limit reached. Try again in an hour.');
+        btn.disabled = false;
+        return;
+      }
+
       if (response.ok) {
         // .json() converts the response into a JS object
         ghData = await response.json();
+
+        // UPGRADE 1: auto-fill name field if it's empty and GitHub has a name
+        // This means user only typed their GitHub username — we fill the rest!
+        if (ghData.name && !document.getElementById('inp-name').value.trim()) {
+          document.getElementById('inp-name').value = ghData.name;
+        }
+
         setStatus('');
       } else {
         setStatus('GitHub user not found — showing card without stats.');
@@ -126,8 +143,18 @@ async function generateCard() {
     setStatus('');
   }
 
+  // Re-read name after possible auto-fill from GitHub
+  const finalName = document.getElementById('inp-name').value.trim();
+
+  // Now validate name after the API call
+  if (!finalName) {
+    setStatus('Please enter your name.');
+    btn.disabled = false;
+    return;
+  }
+
   // Now render the card with all the data we have
-  renderCard(name, role, bio, github);
+  renderCard(finalName, role, bio, github);
 
   // Re-enable the button
   btn.disabled = false;
@@ -178,6 +205,20 @@ function renderCard(name, role, bio, github) {
     ? `<a href="https://github.com/${github}" target="_blank">github.com/${github}</a>`
     : '';
 
+  // UPGRADE 2: show location if GitHub returned one
+  // ghData.location holds the city/country the user set on their profile
+  const locationHTML = ghData && ghData.location
+    ? `<p class="card-location">📍 ${ghData.location}</p>`
+    : '';
+
+  // UPGRADE 3: show a clickable "View on GitHub" button in the footer
+  // This is separate from the plain text link — it stands out more
+  const githubButtonHTML = github
+    ? `<a class="github-btn" href="https://github.com/${github}" target="_blank">
+         🔗 View GitHub Profile
+       </a>`
+    : '';
+
   // Build the full card HTML using a template literal
   // Template literals use backticks ` ` and ${} for variables
   const cardHTML = `
@@ -186,6 +227,7 @@ function renderCard(name, role, bio, github) {
       <div>
         <p class="card-name">${name}</p>
         <p class="card-role">${displayRole}</p>
+        ${locationHTML}
       </div>
     </div>
 
@@ -209,7 +251,7 @@ function renderCard(name, role, bio, github) {
     </div>
 
     <div class="card-footer">
-      ${githubLink}
+      ${githubButtonHTML}
       <span>Made with DevCard</span>
     </div>
   `;
@@ -229,6 +271,8 @@ function renderCard(name, role, bio, github) {
 function setStatus(message) {
   document.getElementById('status-msg').textContent = message;
 }
+
+
 // ============================================
 // THEME TOGGLE
 // ============================================
@@ -259,6 +303,8 @@ window.addEventListener('load', function() {
     document.getElementById('theme-btn').innerHTML = '<span class="toggle-icon">☀️</span> Light';
   }
 });
+
+
 // ============================================
 // DOWNLOAD CARD AS IMAGE
 // ============================================
