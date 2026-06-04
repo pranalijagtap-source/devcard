@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevCard Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="header">
+  <span class="logo-dot"></span>
+  <h1>Dev<span>Card</span> Generator</h1>
+  <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+    <span class="toggle-icon">🌙</span> Dark
+  </button>
+</div>
+
+  <div class="container">
+
+    <!-- LEFT SIDE: the form where user fills details -->
+    <div class="form-panel">
+
+      <div class="field">
+        <label for="inp-name">Full name</label>
+        <input type="text" id="inp-name" placeholder="e.g. Priya Sharma">
+      </div>
+
+      <div class="field">
+        <label for="inp-role">Role / title</label>
+        <input type="text" id="inp-role" placeholder="e.g. Frontend Developer">
+      </div>
+
+      <div class="field">
+        <label for="inp-github">GitHub username</label>
+        <input type="text" id="inp-github" placeholder="e.g. torvalds">
+      </div>
+
+      <div class="field">
+        <label for="inp-bio">Short bio</label>
+        <textarea id="inp-bio" placeholder="e.g. Passionate about clean UIs..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Skills</label>
+        <div class="add-skill-row">
+          <input type="text" id="skill-input" placeholder="Type a skill and press Add">
+          <button onclick="addSkill()">+ Add</button>
+        </div>
+        <!-- skill pills will appear here dynamically -->
+        <div id="skills-list" class="skills-wrap"></div>
+      </div>
+
+      <button class="generate-btn" onclick="generateCard()">
+        Generate my DevCard
+      </button>
+
+      <!-- status messages (loading, errors) go here -->
+      <p id="status-msg"></p>
+
+    </div>
+
+    <!-- RIGHT SIDE: the live card preview -->
+    <div class="card-panel">
+      <p class="panel-label">Live preview</p>
+      <!-- card will be injected here by JavaScript -->
+      <div id="devcard">
+        <p class="placeholder">Fill in your details and click generate</p>
+      </div>
+      <!-- Add this button -->
+  <button class="download-btn" id="download-btn" onclick="downloadCard()" style="display:none;">
+    Download as Image
+  </button>
+    </div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="app.js"></script>
+  <!-- JS file loaded at the bottom so HTML loads first -->
+  <script src="app.js"></script>
+
+</body>
+</html>
